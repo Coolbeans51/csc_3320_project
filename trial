@@ -1,0 +1,69 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/wait.h>
+#include <unistd.h>
+
+int cdcomm(char input[])
+{
+    char *loc = strchr(input, ' ');
+    if(loc == NULL)
+    {
+        return 1;
+    }
+    char *path = loc + 1;
+    if(chdir(path))
+    {
+        return 1;
+    }
+    return 0;
+}
+
+int pwdcomm()
+{
+    char loc[100];
+    getcwd(loc, 100);
+    if(loc == NULL)
+    {
+        return 1;
+    }
+    char *path = loc + 1;
+    if(chdir(path))
+    {
+        return 1;
+    }
+    return 0;
+}
+
+int main()
+{
+    char str[100] = {0};
+    while(1)
+    {
+        if(gets(str) == NULL)
+        {
+            printf("gets command failed: string input is null.\n");
+            exit(1);
+        }
+        if(!strncmp(str, "cd", 3))
+        {
+            int cdi = cdcomm(str);
+        }
+        printf("%s\n", str);
+        if(!strncmp(str, "pwd", 4))
+        {
+            int pwdi = pwdcomm(str);
+        }
+        printf("%s\n", str);
+    }
+    if(fork() == 0)
+    {
+        printf("Hello from the child process.\n");
+    }
+    else
+    {
+        printf("Hello from the parent process.\n");
+        wait(NULL);
+        printf("Child process is terminated.\n");
+    }
+    printf("Bye.\n");
+}
