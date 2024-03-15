@@ -23,7 +23,7 @@ int main()
     char str[100] = {0};
     while(1)
     {
-        scanf("%[^\n]", &str);
+        scanf("%[^\n]", str);
         if(str == NULL)
         {
             printf("gets command failed: string input is null.\n");
@@ -32,6 +32,10 @@ int main()
         if(!strncmp(str, "cd", 3))
         {
             int cdi = cdcomm(str);
+        }
+        if(!strcmp(str, "exit\0"))
+        {
+            return 0;
         }
         printf("%s\n", str);
     }
