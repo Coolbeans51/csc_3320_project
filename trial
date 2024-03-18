@@ -4,6 +4,12 @@
 #include <unistd.h>
 #include <string.h>
 
+int cdcomm(char input[]);
+int exitcomm(char input[]);
+
+char * cmdstr[] = {"cd", "exit", NULL};
+int (*funct[]) (char[]) = {cdcomm, exitcomm};
+
 int cdcomm(char input[])
 {
     char *loc = strchr(input, ' ');
@@ -18,24 +24,43 @@ int cdcomm(char input[])
     }
     return 0;
 }
+
+int exitcomm(char input[])
+{
+    exit(0);
+    return 0;
+}
 int main()
 {
     char str[100] = {0};
     while(1)
     {
-        scanf("%[^\n]", str);
+        fgets(str, 100, stdin);
         if(str == NULL)
         {
             printf("gets command failed: string input is null.\n");
             exit(1);
         }
-        if(!strncmp(str, "cd", 3))
+        str[strlen(str) - 1] = '\0';
+        for(int i = 0; cmdstr[i] != NULL; ++i)
         {
-            int cdi = cdcomm(str);
-        }
-        if(!strcmp(str, "exit\0"))
-        {
-            return 0;
+            char * charptr = strchr(str, ' ');
+            if (charptr != NULL)
+            {
+                *charptr = '\0';
+                if(!strcmp(str, cmdstr[i]))
+                {
+                    *charptr = ' ';
+                    funct[i](str);
+                    break;
+                }
+                *charptr = ' ';
+            }
+            else if(!strcmp(str, cmdstr[i]))
+            {
+                funct[i](str);
+                break;
+            }
         }
         printf("%s\n", str);
     }
