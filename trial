@@ -6,11 +6,38 @@
 
 int cdcomm(char input[]);
 int exitcomm(char input[]);
+int lscomm(char input[]);
+int pwdcomm(char input[]);
 
-char * cmdstr[] = {"cd", "exit", NULL};
-int (*funct[]) (char[]) = {cdcomm, exitcomm};
+char * cmdstr[] = {"pwd", "ls" "exit", NULL};
+int (*funct[]) (char[]) = {pwdcomm, lscomm, exitcomm};
+
+
+
+int pwdcomm(char input[])
+{
+    char buffer[200];
+    getcwd(buffer, 200);
+    printf("%s\n", buffer);
+    return 0;
+}
 
 int cdcomm(char input[])
+{
+    char *loc = strchr(input, ' ');
+    if(loc == NULL)
+    {
+        return 1;
+    }
+    char *path = loc + 1;
+    if(chdir(path))
+    {
+        return 1;
+    }
+    return 0;
+}
+
+int lscomm(char input[])
 {
     char *loc = strchr(input, ' ');
     if(loc == NULL)
@@ -30,18 +57,19 @@ int exitcomm(char input[])
     exit(0);
     return 0;
 }
+
 int main()
 {
     char str[100] = {0};
     while(1)
     {
-        fgets(str, 100, stdin);
+        fgets(str, 100, stdin); //Receive shell input
         if(str == NULL)
         {
             printf("gets command failed: string input is null.\n");
             exit(1);
         }
-        str[strlen(str) - 1] = '\0';
+        str[strlen(str) - 1] = '\0'; // Get rid of the newline in the string
         for(int i = 0; cmdstr[i] != NULL; ++i)
         {
             char * charptr = strchr(str, ' ');
