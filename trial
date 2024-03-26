@@ -3,14 +3,14 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #include <string.h>
+#include <dirent.h>
 
 int cdcomm(char input[]);
 int exitcomm(char input[]);
-int lscomm(char input[]);
 int pwdcomm(char input[]);
 
-char * cmdstr[] = {"pwd", "ls" "exit", NULL};
-int (*funct[]) (char[]) = {pwdcomm, lscomm, exitcomm};
+char * cmdstr[] = {"pwd", "cd", "exit", NULL};
+int (*funct[]) (char[]) = {pwdcomm, cdcomm, exitcomm};
 
 
 
@@ -24,28 +24,13 @@ int pwdcomm(char input[])
 
 int cdcomm(char input[])
 {
-    char *loc = strchr(input, ' ');
+    char *loc = strchr(input, ' ');  // pointer to the space
     if(loc == NULL)
     {
         return 1;
     }
-    char *path = loc + 1;
-    if(chdir(path))
-    {
-        return 1;
-    }
-    return 0;
-}
-
-int lscomm(char input[])
-{
-    char *loc = strchr(input, ' ');
-    if(loc == NULL)
-    {
-        return 1;
-    }
-    char *path = loc + 1;
-    if(chdir(path))
+    char *path = loc + 1; 
+    if(chdir(path)) // if the path does not exist, the function fails
     {
         return 1;
     }
@@ -70,6 +55,7 @@ int main()
             exit(1);
         }
         str[strlen(str) - 1] = '\0'; // Get rid of the newline in the string
+        int funcbool = 0;
         for(int i = 0; cmdstr[i] != NULL; ++i)
         {
             char * charptr = strchr(str, ' ');
@@ -78,6 +64,7 @@ int main()
                 *charptr = '\0';
                 if(!strcmp(str, cmdstr[i]))
                 {
+                    funcbool = 1;
                     *charptr = ' ';
                     funct[i](str);
                     break;
@@ -86,10 +73,38 @@ int main()
             }
             else if(!strcmp(str, cmdstr[i]))
             {
+                funcbool = 1;
                 funct[i](str);
                 break;
             }
         }
+        if(!funcbool)
+        {
+            pid_t procID = fork();
+            if(!procID) //child process
+            {
+                int count = 0;
+                int index;
+                for(index = 0; str[index]; ++index) // str[index] means str[index] != NULL b/c NULL is 0.                
+                {
+                    count += (str[index] == ' '); // if statement
+                }
+                char **argumentv = calloc(count + 2, sizeof(char*));
+                char *token = strtok(str, " ");
+                char *command = token;
+                int indexv = 0;
+                while(token)
+                {
+                    argumentv[indexv++] = token;
+                    token = strtok(NULL, " ");
+                }
+                execvp(command, argumentv);
+                exit(1); // makes sure that the child process dies
+            }
+            // back to parent process
+            int exitstatus;
+            wait(&exitstatus);
+            WEXITSTATUS(exitstatus);
         printf("%s\n", str);
     }
 }
