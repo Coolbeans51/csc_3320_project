@@ -5,6 +5,7 @@
 #include <string.h>
 #include <dirent.h>
 
+
 int cdcomm(char input[]);
 int exitcomm(char input[]);
 int pwdcomm(char input[]);
@@ -43,11 +44,12 @@ int exitcomm(char input[])
     return 0;
 }
 
-int main()
-{
+int main(){
     char str[100] = {0};
     while(1)
     {
+        char buf[PATH_MAX]; //PATH_MAX is 4096 bytes (estimated length of file path)
+        printf("%s:", getcwd(buf, PATH_MAX)); //prints absolute directory path of the current working directory
         fgets(str, 100, stdin); //Receive shell input
         if(str == NULL)
         {
@@ -80,7 +82,7 @@ int main()
         }
         if(!funcbool)
         {
-            pid_t procID = fork();
+            pid_t procID = fork(); //creates a child process to access builtin commands like ls
             if(!procID) //child process
             {
                 int count = 0;
@@ -89,7 +91,7 @@ int main()
                 {
                     count += (str[index] == ' '); // if statement
                 }
-                char **argumentv = calloc(count + 2, sizeof(char*));
+                char **argumentv = calloc(count + 2, sizeof(char*)); //
                 char *token = strtok(str, " ");
                 char *command = token;
                 int indexv = 0;
@@ -106,5 +108,6 @@ int main()
             wait(&exitstatus);
             WEXITSTATUS(exitstatus);
         printf("%s\n", str);
+        }
     }
 }
