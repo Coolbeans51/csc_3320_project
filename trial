@@ -6,31 +6,31 @@
 #include <dirent.h>
 
 
-int cdcomm(char input[]);
+int cdcomm(char input[]);     // Declares hard coded command functions
 int exitcomm(char input[]);
 int pwdcomm(char input[]);
 
-char * cmdstr[] = {"pwd", "cd", "exit", NULL};
+char * cmdstr[] = {"pwd", "cd", "exit", NULL};            // Parallel arrays to match the command strings to the function pointers
 int (*funct[]) (char[]) = {pwdcomm, cdcomm, exitcomm};
 
 
 
-int pwdcomm(char input[])
+int pwdcomm(char input[])   // Pwd command
 {
     char buffer[200];
-    getcwd(buffer, 200);
-    printf("%s\n", buffer);
+    getcwd(buffer, 200); // buffer = string of the absolute path of the directory
+    printf("%s\n", buffer); // Prints the absolute path
     return 0;
 }
 
-int cdcomm(char input[])
+int cdcomm(char input[]) // Cd command
 {
-    char *loc = strchr(input, ' ');  // pointer to the space
-    if(loc == NULL)
+    char *loc = strchr(input, ' ');  // initializes a pointer to the space in the command
+    if(loc == NULL) // if there is no space in the cd command, the function fails
     {
         return 1;
     }
-    char *path = loc + 1; 
+    char *path = loc + 1; // initializes a pointer to the path written after the space
     if(chdir(path)) // if the path does not exist, the function fails
     {
         return 1;
@@ -38,14 +38,14 @@ int cdcomm(char input[])
     return 0;
 }
 
-int exitcomm(char input[])
+int exitcomm(char input[]) // Exits the program
 {
     exit(0);
     return 0;
 }
 
 int main(){
-    char str[100] = {0};
+    char str[100] = {0}; //input string
     while(1)
     {
         char buf[PATH_MAX]; //PATH_MAX is 4096 bytes (estimated length of file path)
@@ -58,56 +58,55 @@ int main(){
         }
         str[strlen(str) - 1] = '\0'; // Get rid of the newline in the string
         int funcbool = 0;
-        for(int i = 0; cmdstr[i] != NULL; ++i)
+        for(int i = 0; cmdstr[i] != NULL; ++i)  // Scans through the cmdstr list
         {
-            char * charptr = strchr(str, ' ');
-            if (charptr != NULL)
-            {
+            char * charptr = strchr(str, ' '); // Sets the character to pointer to the space and the input after a command
+            if (charptr != NULL)               // If the command has an input, the str is set to just the command
+            {                                   // and the program evaluates if str is part of the cmdstr list
                 *charptr = '\0';
-                if(!strcmp(str, cmdstr[i]))
-                {
+                if(!strcmp(str, cmdstr[i])) // If the command is part of the cmdstr list, funcbool is set to true
+                {                           // and the program runs the function corresponding to the one in the cmdstr list
                     funcbool = 1;
                     *charptr = ' ';
                     funct[i](str);
                     break;
                 }
-                *charptr = ' ';
+                *charptr = ' ';            // Regardless of whether the command is in the cmdstr list, str is reset back to the full user input including the command
             }
-            else if(!strcmp(str, cmdstr[i]))
-            {
+            else if(!strcmp(str, cmdstr[i])) // If the command doesn't have an input and it is in the cmdstr list, funcbool is set to true 
+            {                                // and it runs the function corresponding to the one in cmdstr
                 funcbool = 1;
                 funct[i](str);
                 break;
             }
         }
-        if(!funcbool)
+        if(!funcbool) 
         {
-            pid_t procID = fork(); //creates a child process to access builtin commands like ls
-            if(!procID) //child process
+            pid_t procID = fork();   // If the command is not in the function list, the program creates a child process to execute the command
+            if(!procID) // If the process ID is that of the child process (0), 
             {
-                int count = 0;
+                int count = 0; // counts the total amount of spaces (number of inputs - 1)
                 int index;
                 for(index = 0; str[index]; ++index) // str[index] means str[index] != NULL b/c NULL is 0.                
                 {
                     count += (str[index] == ' '); // if statement
                 }
-                char **argumentv = calloc(count + 2, sizeof(char*)); //
-                char *token = strtok(str, " ");
-                char *command = token;
+                char **argumentv = calloc(count + 2, sizeof(char*)); //allocates space for the argument string array
+                char *token = strtok(str, " "); // replaces the first space in str with a null terminator
+                char *command = token; // command is initializes to the first part of the string leading up to the first space
                 int indexv = 0;
-                while(token)
+                while(token) // Iterates through str and adds the parts of the string (tokens) to the array argumentv
                 {
                     argumentv[indexv++] = token;
-                    token = strtok(NULL, " ");
+                    token = strtok(NULL, " "); //NULL means that it is will produce a new token in the string that the program already inputted
                 }
-                execvp(command, argumentv);
-                exit(1); // makes sure that the child process dies
+                execvp(command, argumentv); // searches the path for the command and runs the command
+                exit(1); // makes sure that the child process is terminated
             }
             // back to parent process
             int exitstatus;
-            wait(&exitstatus);
-            WEXITSTATUS(exitstatus);
-        printf("%s\n", str);
+            wait(&exitstatus);  //Waits for the child to be terminated
+            // WEXITSTATUS(exitstatus);
         }
     }
 }
