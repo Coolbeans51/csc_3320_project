@@ -7,15 +7,15 @@
 
 
 int cdcomm(char input[]);     // Declares hard coded command functions
-int exitcomm(char input[]);
-int pwdcomm(char input[]);
+int exitcomm(__attribute__ ((unused)) char input[]);
+int pwdcomm(__attribute__ ((unused)) char input[]);
 
 char * cmdstr[] = {"pwd", "cd", "exit", NULL};            // Parallel arrays to match the command strings to the function pointers
 int (*funct[]) (char[]) = {pwdcomm, cdcomm, exitcomm};
 
 
 
-int pwdcomm(char input[])   // Pwd command
+int pwdcomm(__attribute__ ((unused)) char input[])   // Pwd command
 {
     char buffer[200];
     getcwd(buffer, 200); // buffer = string of the absolute path of the directory
@@ -38,7 +38,7 @@ int cdcomm(char input[]) // Cd command
     return 0;
 }
 
-int exitcomm(char input[]) // Exits the program
+int exitcomm(__attribute__ ((unused)) char input[]) // Exits the program
 {
     exit(0);
     return 0;
