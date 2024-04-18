@@ -31,7 +31,7 @@ int cdcomm(char input[]) // Cd command
         return 1;
     }
     char *path = loc + 1; // initializes a pointer to the path written after the space
-    if(chdir(path)) // if the path does not exist, the function fails
+    if(chdir(path)) // If the path does not exist, the function fails. If the path does exist, the program changes the directory.
     {
         return 1;
     }
@@ -50,13 +50,13 @@ int main(){
     {
         char buf[PATH_MAX]; //PATH_MAX is 4096 bytes (estimated length of file path)
         printf("%s:", getcwd(buf, PATH_MAX)); //prints absolute directory path of the current working directory
-        fgets(str, 100, stdin); //Receive shell input
+        fgets(str, 100, stdin); //Receives shell input
         if(str == NULL)
         {
             printf("gets command failed: string input is null.\n");
             exit(1);
         }
-        str[strlen(str) - 1] = '\0'; // Get rid of the newline in the string
+        str[strlen(str) - 1] = '\0'; // Get rid of the newline in the string input
         int funcbool = 0;
         for(int i = 0; cmdstr[i] != NULL; ++i)  // Scans through the cmdstr list
         {
@@ -89,18 +89,18 @@ int main(){
                 int index;
                 for(index = 0; str[index]; ++index) // str[index] means str[index] != NULL b/c NULL is 0.                
                 {
-                    count += (str[index] == ' '); // if statement
+                    count += (str[index] == ' '); // if statement adds to the count if the character is a space
                 }
                 char **argumentv = calloc(count + 2, sizeof(char*)); //allocates space for the argument string array
                 char *token = strtok(str, " "); // replaces the first space in str with a null terminator
-                char *command = token; // command is initializes to the first part of the string leading up to the first space
+                char *command = token; // command is initialized to the first part of the string leading up to the first space
                 int indexv = 0;
                 while(token) // Iterates through str and adds the parts of the string (tokens) to the array argumentv
                 {
                     argumentv[indexv++] = token;
                     token = strtok(NULL, " "); //NULL means that it is will produce a new token in the string that the program already inputted
                 }
-                execvp(command, argumentv); // searches the path for the command and runs the command
+                execvp(command, argumentv); // searches the path for the command and runs the command using the strings in argumentv as the inputs
                 exit(1); // makes sure that the child process is terminated
             }
             // back to parent process
